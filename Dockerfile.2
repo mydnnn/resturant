@@ -1,0 +1,24 @@
+# Stage 1: Use official Nginx image as the base image
+FROM nginx:latest as build
+
+# Remove the default Nginx index.html file
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy only necessary files to the Nginx default web root directory
+COPY index.html /usr/share/nginx/html/
+COPY resturant.css /usr/share/nginx/html/
+# Copy all PNG, JPG, and JPEG files from the current directory on the host to /usr/share/nginx/html/ in the image
+COPY *.png *.jpg *.jpeg /usr/share/nginx/html/
+
+
+# Stage 2: Use a minimal Nginx image for the final stage
+FROM nginx:alpine
+
+# Copy the built files from the previous stage
+COPY --from=build /usr/share/nginx/html/ /usr/share/nginx/html/
+
+# Expose port 80 for web traffic
+EXPOSE 80
+
+# The CMD instruction defines the command to run when the container starts
+CMD ["nginx", "-g", "daemon off;"]
